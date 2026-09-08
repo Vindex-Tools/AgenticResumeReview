@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Resume Review</title>
+    <!-- Google Fonts for Cyber Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="app-container">
+        <header class="app-header">
+            <h1 class="gradient-text">Cyber Resume Review</h1>
+            <p class="subtitle">Evidence-led resume reviews, powered by Gemini Pro</p>
+        </header>
+
+        <div class="content-grid">
+            <!-- Left Column: Inputs -->
+            <section class="panel glass-panel input-panel">
+                <h2>Configuration</h2>
+                
+                <div class="form-group">
+                    <label for="api-key">Gemini API Key</label>
+                    <input type="password" id="api-key" placeholder="AIzaSy..." autocomplete="off">
+                    <small class="helper-text">Get a free key from <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>. Stored only in your browser.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="resume-upload">Upload Resume (PDF/TXT)</label>
+                    <div class="file-drop-area" id="drop-area">
+                        <span class="file-msg">Drag & Drop or Click to Upload</span>
+                        <input class="file-input" type="file" id="resume-upload" accept=".pdf,.txt">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="job-description">Target Job Description (Optional)</label>
+                    <textarea id="job-description" rows="4" placeholder="Paste the job description here..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="review-mode">Review Mode</label>
+                    <select id="review-mode">
+                        <option value="full">Full Review & Assessment</option>
+                        <option value="tailor">Tailor to Job Description</option>
+                        <option value="quick">Quick Priority Findings</option>
+                        <option value="rewrite">Complete Rewrite</option>
+                    </select>
+                </div>
+
+                <button id="analyze-btn" class="primary-btn pulse-anim">
+                    <span class="btn-text">Analyze Resume</span>
+                    <span class="loader hidden"></span>
+                </button>
+            </section>
+
+            <!-- Right Column: Results -->
+            <section class="panel glass-panel results-panel">
+                <h2>Review Results</h2>
+                <div id="results-content" class="markdown-body">
+                    <div class="empty-state">
+                        <div class="icon">✨</div>
+                        <p>Upload your resume and click analyze to see your results.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Import Map for ES Modules -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.sh/@google/genai@0.1.2",
+          "marked": "https://esm.sh/marked@11.1.1"
+        }
+      }
+    </script>
+    
+    <!-- PDF.js for local PDF extraction if needed -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <!-- Main Logic -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
