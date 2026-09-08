@@ -168,39 +168,54 @@ function resetModelSelect(placeholderText = 'Paste API key or query models...') 
 // Curated list of primary Gemini models suitable for resume review
 const CURATED_MODELS = [
     {
+        id: 'gemini-3.6-flash',
+        aliases: ['gemini-3.6-flash'],
+        label: 'Gemini 3.6 Flash (Recommended - Fast & Free Tier)'
+    },
+    {
+        id: 'gemini-3.8-flash',
+        aliases: ['gemini-3.8-flash'],
+        label: 'Gemini 3.8 Flash (Latest Flagship)'
+    },
+    {
+        id: 'gemini-3.7-flash',
+        aliases: ['gemini-3.7-flash'],
+        label: 'Gemini 3.7 Flash'
+    },
+    {
+        id: 'gemini-3.5-flash',
+        aliases: ['gemini-3.5-flash'],
+        label: 'Gemini 3.5 Flash'
+    },
+    {
+        id: 'gemini-flash-latest',
+        aliases: ['gemini-flash-latest'],
+        label: 'Gemini Flash (Latest Auto-Updating)'
+    },
+    {
+        id: 'gemini-2.5-pro',
+        aliases: ['gemini-2.5-pro'],
+        label: 'Gemini 2.5 Pro (Deep Evidence Review)'
+    },
+    {
+        id: 'gemini-2.5-flash-lite',
+        aliases: ['gemini-2.5-flash-lite'],
+        label: 'Gemini 2.5 Flash-Lite (Lightweight)'
+    },
+    {
         id: 'gemini-2.0-flash',
         aliases: ['gemini-2.0-flash-001', 'gemini-2.0-flash-exp'],
-        label: 'Gemini 2.0 Flash (Recommended - Fast & Free Tier)'
-    },
-    {
-        id: 'gemini-2.5-flash',
-        aliases: ['gemini-2.5-flash'],
-        label: 'Gemini 2.5 Flash (Next-Gen High Speed)'
-    },
-    {
-        id: 'gemini-1.5-flash',
-        aliases: ['gemini-1.5-flash-latest', 'gemini-1.5-flash-002', 'gemini-1.5-flash-001'],
-        label: 'Gemini 1.5 Flash (Balanced)'
+        label: 'Gemini 2.0 Flash'
     },
     {
         id: 'gemini-1.5-pro',
         aliases: ['gemini-1.5-pro-latest', 'gemini-1.5-pro-002', 'gemini-1.5-pro-001'],
-        label: 'Gemini 1.5 Pro (Deep Evidence Review)'
+        label: 'Gemini 1.5 Pro'
     },
     {
-        id: 'gemini-1.5-flash-8b',
-        aliases: ['gemini-1.5-flash-8b-latest', 'gemini-1.5-flash-8b-001'],
-        label: 'Gemini 1.5 Flash-8B (Lightweight)'
-    },
-    {
-        id: 'gemini-2.0-flash-thinking-exp-01-21',
-        aliases: ['gemini-2.0-flash-thinking-exp'],
-        label: 'Gemini 2.0 Flash Thinking (Reasoning)'
-    },
-    {
-        id: 'gemini-pro',
-        aliases: ['gemini-1.0-pro'],
-        label: 'Gemini 1.0 Pro (Legacy)'
+        id: 'gemini-1.5-flash',
+        aliases: ['gemini-1.5-flash-latest', 'gemini-1.5-flash-002', 'gemini-1.5-flash-001'],
+        label: 'Gemini 1.5 Flash'
     }
 ];
 
@@ -261,15 +276,28 @@ async function discoverAvailableModels(apiKey, isManual = false) {
             }
         });
 
-        // Other non-curated models (excluding embeddings, aqa, imagen, and gemma)
+        // Exclude deprecated endpoints and specialized non-text models (tts, audio, video, robotics, embeddings)
+        const DEPRECATED_OR_UNSUPPORTED = [
+            'gemini-2.5-flash',
+            'embedding',
+            'aqa',
+            'imagen',
+            'gemma',
+            'tts',
+            'veo',
+            'lyria',
+            'transcribe',
+            'robotics',
+            'banana',
+            'audio'
+        ];
+
         const matchedIds = matchedCurated.map(m => m.id);
-        const otherModels = returnedIds.filter(id => 
-            !matchedIds.includes(id) && 
-            !id.toLowerCase().includes('embedding') && 
-            !id.toLowerCase().includes('aqa') && 
-            !id.toLowerCase().includes('imagen') &&
-            !id.toLowerCase().includes('gemma')
-        );
+        const otherModels = returnedIds.filter(id => {
+            const lower = id.toLowerCase();
+            if (matchedIds.includes(id)) return false;
+            return !DEPRECATED_OR_UNSUPPORTED.some(term => lower.includes(term));
+        });
 
         if (matchedCurated.length > 0 || otherModels.length > 0) {
             const previousSelection = modelSelect.value;
@@ -301,11 +329,14 @@ async function discoverAvailableModels(apiKey, isManual = false) {
                 modelSelect.appendChild(otherGroup);
             }
 
-            // Preserve user's previous selection if it is still available, otherwise default to Gemini 2.0 Flash
+            // Preserve user's previous selection if it is still available, otherwise default to Gemini 3.6 Flash
             if (previousSelection && (matchedIds.includes(previousSelection) || otherModels.includes(previousSelection))) {
                 modelSelect.value = previousSelection;
             } else {
-                const bestDefault = matchedCurated.find(m => m.id.includes('2.0-flash')) 
+                const bestDefault = matchedCurated.find(m => m.id.includes('3.6-flash')) 
+                    || matchedCurated.find(m => m.id.includes('3.8-flash'))
+                    || matchedCurated.find(m => m.id.includes('flash-latest'))
+                    || matchedCurated.find(m => m.id.includes('2.0-flash')) 
                     || matchedCurated[0];
                 if (bestDefault) {
                     modelSelect.value = bestDefault.id;
@@ -710,7 +741,7 @@ analyzeBtn.addEventListener('click', async () => {
             };
         }
 
-        const chosenModel = modelSelect.value || 'gemini-2.0-flash';
+        const chosenModel = modelSelect.value || 'gemini-3.6-flash';
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${chosenModel}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
@@ -750,7 +781,7 @@ analyzeBtn.addEventListener('click', async () => {
         reportStatusBadge.textContent = 'Error';
         reportStatusBadge.style.color = 'var(--accent-rose)';
         
-        const failedModel = modelSelect.value || 'gemini-2.0-flash';
+        const failedModel = modelSelect.value || 'gemini-3.6-flash';
         resultsContent.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon-wrap" style="background: rgba(244, 63, 94, 0.12); color: var(--accent-rose);">
