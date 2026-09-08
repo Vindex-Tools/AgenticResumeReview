@@ -1,33 +1,39 @@
-# Cyber Resume Reviewer (Local App)
+# ResumeIQ — Agentic Resume Reviewer
 
-This is a local, privacy-first web application that uses the Gemini Pro API and the [Cyber Resume Reviewer Skill](https://github.com/mubix/cyber-resume-reviewer-skill) to analyze and improve your IT/Cybersecurity resume.
+A local, privacy-first web application powered by the Gemini Pro API and the [Cyber Resume Reviewer Framework](https://github.com/mubix/cyber-resume-reviewer-skill). It delivers candid, evidence-led career critique, ATS-friendly suggestions, and targeted resume rewrites.
 
-## Features
-- **Privacy First:** The app runs entirely in your browser. Your resume is only sent directly to Google's Gemini API.
-- **Custom Aesthetic:** Premium glassmorphism design with a dynamic dark mode.
-- **Direct Skill Integration:** Uses the exact instructions from the Cyber Resume Reviewer skill for high-quality, evidence-led feedback.
-- **PDF Extraction:** Extracts text locally from your PDFs before sending to Gemini to save tokens and ensure clean parsing.
+## Key Features
+- **Clean Executive Aesthetic:** Modern, distraction-free SaaS design with ambient lighting, glassmorphism, and responsive layout.
+- **Light & Dark Theme:** Seamless one-click toggle between Dark Slate and crisp Light mode.
+- **Privacy First:** 100% client-side execution. PDF extraction and text parsing happen directly in your browser.
+- **Evidence-Led Review Modes:**
+  - **Full Review & Assessment:** Comprehensive fit analysis, evidence mapping, and prioritized critique.
+  - **Tailor to Job Description:** Maps JD requirements to candidate achievements and bridges gaps.
+  - **Quick Priorities:** Top 5 high-impact bullet repairs.
+  - **Complete Rewrite:** Full refreshed resume draft.
+- **Export & Productivity Tools:**
+  - One-click copy formatted Markdown to clipboard.
+  - Export report as `.md` file.
+  - Print or Save as PDF with dedicated print stylesheet.
+- **Persistent Key Storage:** Secure local storage option with show/hide password toggle.
 
 ## How to Run
 
-Because this app fetches the skill instructions dynamically from the `skill/` folder, you cannot simply double-click the `index.html` file (your browser will block it due to CORS security policies). You must run it through a local web server.
+Because this app fetches the skill instructions dynamically from the `skill/` folder, it should be run through a local web server (to comply with browser CORS policies):
 
-### Using Python (Recommended)
-If you have Python installed, open a terminal in this directory and run:
+### Using Python
 ```bash
 python -m http.server 8000
 ```
-Then open your browser and navigate to: http://localhost:8000
+Then navigate to: [http://localhost:8000](http://localhost:8000)
 
 ### Using Node.js
-If you have Node.js installed, you can use `npx serve`:
 ```bash
 npx serve
 ```
 
-## Setup Instructions
-1. Open the app in your browser using one of the methods above.
-2. Get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-3. Paste the API key into the app (it is only stored in your browser's memory while the tab is open).
-4. Upload your resume (PDF or TXT) and optionally a target Job Description.
-5. Click **Analyze Resume** and wait for the results!
+## Quick Start
+1. Open the app in your browser via your local server.
+2. Enter your free Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+3. Upload your resume (`.pdf` or `.txt`) and optionally paste a target job description.
+4. Select your review mode and click **Analyze Resume**.
