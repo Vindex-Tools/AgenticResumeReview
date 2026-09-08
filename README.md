@@ -10,6 +10,8 @@
 
 A sleek, privacy-first web application designed for IT and cybersecurity professionals to receive evidence-led resume reviews, job description alignment, and exact technical bullet transformations.
 
+![Cyber Resume Reviewer homepage in dark mode, showing review inputs, model connection settings, and the analysis workspace](docs/images/homepage.png)
+
 Gemini is the default provider; use your own Gemini API key. OpenAI (GPT) and Anthropic (Claude) support is in development and unavailable in the provider selector. The shared review instructions come from `skill/SKILL.md`, alongside the selected deliverable, resume text, and optional job description. Vindex Tools' adaptation of the [Cyber Resume Reviewer Framework](https://github.com/mubix/cyber-resume-reviewer-skill) (v4.1) focuses on verifiable technical achievements rather than keyword stuffing or arbitrary scores.
 
 ---
