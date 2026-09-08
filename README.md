@@ -86,7 +86,7 @@ Evaluates candidate documents through four core evaluation lenses:
 
 ### 1. Prerequisites
 - A modern web browser (Chrome, Edge, Firefox, Brave, Safari).
-- An API key with model access and sufficient quota from one of the providers listed above.
+- **Recommended:** Get a free Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey). You can use the [Gemini API free tier](https://ai.google.dev/gemini-api/docs/billing) with supported models, subject to its rate limits and available quota.
 
 ### 2. How to Run Locally
 
