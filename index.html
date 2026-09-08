@@ -3,372 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Resume Reviewer | Evidence-Led IT & Infosec Review</title>
-    <meta name="description" content="Evidence-led, candid IT and cybersecurity resume review and job tailoring powered by Google Gemini Pro.">
-    
-    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-    
-    <!-- Main Stylesheet -->
+    <meta name="color-scheme" content="light dark">
+    <title>Cyber Resume Reviewer | Analysis workspace</title>
+    <meta name="description" content="Technical resume analysis for IT and cybersecurity careers. Review your evidence, target alignment, and bullet edits.">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Subtle Ambient Glow Elements -->
-    <div class="ambient-glow glow-top-left"></div>
-    <div class="ambient-glow glow-top-right"></div>
-    <div class="ambient-glow glow-bottom-center"></div>
-
+    <a class="skip-link" href="#workspace">Skip to workspace</a>
     <div class="app-container">
-        <!-- Top Navigation Bar -->
-        <nav class="app-nav">
-            <div class="brand-area">
-                <div class="brand-logo" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                </div>
-                <div class="brand-text">
-                    <div class="brand-title">
-                        Cyber Resume Reviewer
-                        <span class="brand-badge">Skill v4.1</span>
-                    </div>
-                    <span class="brand-subtitle">IT & Cybersecurity Career Review</span>
-                </div>
-            </div>
-
+        <nav class="app-nav" aria-label="Main navigation">
+            <a class="brand-area" href="./" aria-label="Cyber Resume Reviewer home">
+                <span class="brand-logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5"/></svg></span>
+                <span class="brand-text">CYBER<span class="brand-wordmark">RESUME REVIEWER</span></span>
+            </a>
             <div class="nav-actions">
-                <div class="status-indicator">
-                    <span class="status-dot"></span>
-                    <span>Gemini Pro</span>
-                </div>
-                <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
-                    <!-- Sun / Moon Icon (updated dynamically) -->
-                    <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
+                <span class="nav-caption">IT / SECURITY / ENGINEERING</span>
+                <button id="theme-toggle" class="theme-toggle-btn" title="Switch color theme" aria-label="Switch to light theme">
+                    <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
             </div>
         </nav>
-
-        <!-- Hero Header -->
         <header class="app-hero">
-            <h1 class="hero-title">
-                Evidence-Led <span class="gradient-text">Cyber Resume Review</span>
-            </h1>
-            <p class="hero-desc">
-                Candid fit assessment, prioritized findings, and exact bullet edits for IT and cybersecurity professionals.
-            </p>
+            <div><p class="eyebrow"><span class="terminal-prefix">&gt;_</span> CAREER TOOLS / RESUME ANALYSIS</p><h1>Your next move.<span> Backed by evidence.</span></h1><p class="hero-description">Technical depth. Clear impact. A resume that holds up under review.</p></div>
+            <a class="hero-sample" href="?demo=1">Explore a sample report <span aria-hidden="true">↗</span></a>
         </header>
-
-        <!-- Main Workspace Grid -->
-        <main class="content-grid">
-            <!-- Left Column: Setup & Inputs -->
-            <section class="panel input-panel">
-                <div class="panel-header">
-                    <div class="panel-title-wrap">
-                        <div class="panel-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                            </svg>
+        <main id="workspace" class="content-grid" tabindex="-1">
+            <section class="input-panel" aria-labelledby="input-title">
+                <div class="panel-header"><h2 id="input-title">Review inputs</h2><span class="section-caption">CONFIGURE</span></div>
+                <details class="connection-settings" id="connection-settings" open>
+                    <summary><span class="connection-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v4m8-4v4M6 7h12v4a6 6 0 0 1-12 0zM12 17v4"/></svg>Model connection</span><span class="connection-summary"><span id="provider-label">Select provider</span><span class="details-chevron">⌄</span></span></summary>
+                    <div class="connection-body">
+                        <div class="form-group provider-group">
+                            <div class="form-label-row"><label for="provider-select">AI provider</label><span class="label-hint">Your key, your choice</span></div>
+                            <select id="provider-select" class="text-input">
+                                <option value="gemini" selected>Google · Gemini</option>
+                                <option value="openai" disabled>OpenAI · GPT — In development</option>
+                                <option value="anthropic" disabled>Anthropic · Claude — In development</option>
+                            </select>
+                            <p class="provider-note">GPT and Claude support is in development.</p>
                         </div>
-                        <h2>Configuration</h2>
-                    </div>
-                </div>
-
-                <!-- API Key -->
-                <div class="form-group">
-                    <div class="form-label-row">
-                        <label for="api-key">Gemini API Key</label>
-                        <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="label-link">
-                            Get free key
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="7" y1="17" x2="17" y2="7"></line>
-                                <polyline points="7 7 17 7 17 17"></polyline>
-                            </svg>
-                        </a>
-                    </div>
-                    <div class="api-key-input-row">
-                        <div class="input-with-icon">
-                            <span class="input-icon-left">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                </svg>
-                            </span>
-                            <input type="password" id="api-key" class="text-input" placeholder="Paste your Gemini API key (AIza...)" autocomplete="off">
-                            <button type="button" id="toggle-key-visibility" class="input-toggle-btn" title="Toggle visibility" aria-label="Show or hide API key">
-                                <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
+                        <div class="form-group">
+                            <div class="form-label-row"><label for="api-key">API key</label><a id="api-key-link" target="_blank" rel="noopener noreferrer" class="label-link hidden">Get a key ↗</a></div>
+                            <div class="api-key-input-row">
+                                <div class="input-with-icon">
+                                    <input type="password" id="api-key" class="text-input" placeholder="Choose an AI provider first" autocomplete="off" spellcheck="false" disabled>
+                                    <button type="button" id="toggle-key-visibility" class="input-toggle-btn" title="Show or hide API key" aria-label="Show API key"><svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                                </div>
+                                <button type="button" id="fetch-models-btn" class="connect-btn" disabled><span id="connect-btn-text">Query Models</span></button>
+                            </div>
+                            <label class="checkbox-row" for="remember-key"><input type="checkbox" id="remember-key"><span>Remember key in this browser</span></label>
                         </div>
-                        <button type="button" id="fetch-models-btn" class="connect-btn" title="Query and validate models for this key">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                            </svg>
-                            <span id="connect-btn-text">Query Models</span>
-                        </button>
+                        <div class="form-group">
+                            <div class="form-label-row"><label for="model-select">Model</label><span id="model-status-hint" class="label-hint" role="status">Awaiting API key</span></div>
+                            <select id="model-select" class="text-input is-placeholder" disabled><option value="" disabled selected>Choose an AI provider first</option></select>
+                        </div>
                     </div>
-                    <label class="checkbox-row" for="remember-key">
-                        <input type="checkbox" id="remember-key">
-                        <span class="checkbox-label">Remember key in this browser (stored locally)</span>
-                    </label>
-                </div>
-
-                <!-- Gemini Model Selection -->
-                <div class="form-group">
-                    <div class="form-label-row">
-                        <label for="model-select">Gemini Model</label>
-                        <span id="model-status-hint" class="label-hint">Awaiting API Key</span>
-                    </div>
-                    <select id="model-select" class="text-input is-placeholder" aria-label="Gemini Model">
-                        <option value="" disabled selected>Paste API key or query models...</option>
-                    </select>
-                </div>
-
-                <!-- Resume Upload Area -->
-                <div class="form-group">
-                    <label>Cyber Resume Document</label>
+                </details>
+                <div class="input-section">
+                    <div class="section-heading"><span class="step-number">01</span><h3>Your resume</h3></div>
                     <div class="file-drop-container">
-                        <div class="file-drop-area" id="drop-area">
-                            <div class="upload-icon-circle">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="17 8 12 3 7 8"></polyline>
-                                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                                </svg>
-                            </div>
-                            <div>
-                                <span class="drop-text-primary file-msg">Click to upload or drag & drop</span>
-                                <p class="drop-text-subtle">PDF or TXT document (Parsed locally)</p>
-                            </div>
-                            <input class="file-input" type="file" id="resume-upload" accept=".pdf,.txt">
-                        </div>
-
-                        <!-- Uploaded File Summary (Hidden by default) -->
+                        <label class="file-drop-area" id="drop-area" for="resume-upload">
+                            <span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 16v4h16v-4"/></svg></span>
+                            <span class="drop-text-primary">Drop your resume here</span>
+                            <span class="drop-text-subtle">or <span class="upload-link">browse files</span> &nbsp;·&nbsp; PDF or TXT</span>
+                            <input class="file-input" type="file" id="resume-upload" accept=".pdf,.txt" aria-label="Upload your resume as PDF or TXT">
+                        </label>
                         <div id="file-card" class="file-card hidden">
-                            <div class="file-info">
-                                <div class="file-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                        <polyline points="14 2 14 8 20 8"></polyline>
-                                    </svg>
-                                </div>
-                                <div class="file-details">
-                                    <span id="file-name-display" class="file-name">filename.pdf</span>
-                                    <span id="file-meta-display" class="file-meta">PDF • 0 KB</span>
-                                </div>
-                            </div>
-                            <button type="button" id="remove-file-btn" class="file-remove-btn" title="Remove file" aria-label="Remove uploaded file">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
+                            <div class="file-info"><span class="file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h5"/></svg></span><div class="file-details"><span id="file-name-display" class="file-name"></span><span id="file-meta-display" class="file-meta"></span></div></div>
+                            <button type="button" id="remove-file-btn" class="file-remove-btn" title="Remove file" aria-label="Remove uploaded file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Job Description (Optional) -->
-                <div class="form-group">
-                    <div class="form-label-row">
-                        <label for="job-description">Target Job Description</label>
-                        <span id="jd-char-count" class="label-hint">Optional</span>
-                    </div>
-                    <textarea id="job-description" class="text-input" rows="3" placeholder="Paste target cybersecurity job description (SOC, AppSec, Cloud Sec, GRC, PenTest, etc.) to tailor the critique..."></textarea>
+                <div class="input-section">
+                    <div class="section-heading"><span class="step-number">02</span><h3><label for="job-description">Target job description</label></h3><span id="jd-char-count" class="label-hint">Optional</span></div>
+                    <textarea id="job-description" class="text-input" rows="3" placeholder="Paste a job description for a more focused review."></textarea>
                 </div>
-
-                <!-- Review Mode Cards -->
-                <div class="form-group">
-                    <label>Review Objective</label>
-                    <select id="review-mode">
-                        <option value="full">Full Review & Assessment</option>
-                        <option value="tailor">Tailor to Job Description</option>
-                        <option value="quick">Quick Priority Findings</option>
-                        <option value="rewrite">Complete Rewrite</option>
-                    </select>
-
-                    <div class="mode-grid" id="mode-cards-grid">
-                        <div class="mode-card is-selected" data-mode="full">
-                            <div class="mode-header">
-                                <div class="mode-icon-title">
-                                    <span class="mode-icon">📋</span>
-                                    <span class="mode-title">Full Review</span>
-                                </div>
-                                <div class="mode-check">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </div>
-                            </div>
-                            <p class="mode-desc">Candid fit assessment, prioritized findings, and exact edits supported by your resume.</p>
-                        </div>
-
-                        <div class="mode-card" data-mode="tailor">
-                            <div class="mode-header">
-                                <div class="mode-icon-title">
-                                    <span class="mode-icon">🎯</span>
-                                    <span class="mode-title">Tailor to JD</span>
-                                </div>
-                                <div class="mode-check">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </div>
-                            </div>
-                            <p class="mode-desc">Maps cyber requirements to candidate achievements and bridges gaps.</p>
-                        </div>
-
-                        <div class="mode-card" data-mode="quick">
-                            <div class="mode-header">
-                                <div class="mode-icon-title">
-                                    <span class="mode-icon">⚡</span>
-                                    <span class="mode-title">Quick Priorities</span>
-                                </div>
-                                <div class="mode-check">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </div>
-                            </div>
-                            <p class="mode-desc">Top 5 high-impact findings and immediate technical bullet tweaks.</p>
-                        </div>
-
-                        <div class="mode-card" data-mode="rewrite">
-                            <div class="mode-header">
-                                <div class="mode-icon-title">
-                                    <span class="mode-icon">✍️</span>
-                                    <span class="mode-title">Full Rewrite</span>
-                                </div>
-                                <div class="mode-check">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </div>
-                            </div>
-                            <p class="mode-desc">Refreshed executive draft preserving authentic candidate facts.</p>
-                        </div>
+                <fieldset class="input-section mode-fieldset">
+                    <legend><span class="step-number">03</span>Analysis mode</legend>
+                    <select id="review-mode" class="hidden" aria-label="Review objective" tabindex="-1"><option value="full">Full review</option><option value="tailor">Tailor to a role</option><option value="quick">Quick priorities</option><option value="rewrite">Complete rewrite</option></select>
+                    <div class="mode-grid" id="mode-cards-grid" role="group" aria-label="Review objective">
+                        <button type="button" class="mode-card is-selected" data-mode="full" aria-pressed="true">
+                            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h5"/></svg>
+                            <span class="mode-check" aria-hidden="true"></span><span class="mode-copy"><span class="mode-title">Full review</span><span class="mode-desc">Strengths, priorities, and exact edits.</span></span>
+                        </button>
+                        <button type="button" class="mode-card" data-mode="tailor" aria-pressed="false">
+                            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="M12 1v3M20 12h3M12 20v3M1 12h3"/></svg>
+                            <span class="mode-check" aria-hidden="true"></span><span class="mode-copy"><span class="mode-title">Tailor to a role</span><span class="mode-desc">Align your experience with a job.</span></span>
+                        </button>
+                        <button type="button" class="mode-card" data-mode="quick" aria-pressed="false">
+                            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></svg>
+                            <span class="mode-check" aria-hidden="true"></span><span class="mode-copy"><span class="mode-title">Quick priorities</span><span class="mode-desc">Focus on the five biggest improvements.</span></span>
+                        </button>
+                        <button type="button" class="mode-card" data-mode="rewrite" aria-pressed="false">
+                            <svg class="mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 5 5 5M4 20l5-1L21 7a2.1 2.1 0 0 0-4-4L5 15zM13 21h8"/></svg>
+                            <span class="mode-check" aria-hidden="true"></span><span class="mode-copy"><span class="mode-title">Complete rewrite</span><span class="mode-desc">A fresh draft, grounded in your facts.</span></span>
+                        </button>
                     </div>
-                </div>
-
-                <!-- Primary CTA Button -->
-                <button id="analyze-btn" class="primary-btn">
-                    <span class="btn-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                        </svg>
-                    </span>
-                    <span class="btn-text">Analyze Resume</span>
-                    <span class="loader hidden"></span>
-                </button>
+                </fieldset>
+                <button id="analyze-btn" class="primary-btn"><span class="btn-text">Run analysis</span><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span><span class="loader hidden"></span></button>
+                <p id="privacy-note" class="privacy-note">Files are read in your browser. Resume text and any job description are sent to your selected provider when you run analysis.</p>
             </section>
-
-            <!-- Right Column: Results & Report Viewer -->
-            <section class="panel results-panel">
+            <section class="results-panel" aria-labelledby="report-title">
                 <div class="results-header">
-                    <div class="results-title-group">
-                        <h2>Cyber Review Report</h2>
-                        <span id="report-status-badge" class="results-badge">Ready</span>
-                    </div>
-
-                    <div class="results-actions">
-                        <button id="toggle-view-btn" class="tool-btn" title="Toggle between Formatted Document and Raw Markdown">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="16 18 22 12 16 6"></polyline>
-                                <polyline points="8 6 2 12 8 18"></polyline>
-                            </svg>
-                            <span id="toggle-view-text">Raw .md</span>
-                        </button>
-
-                        <button id="copy-btn" class="tool-btn" title="Copy Markdown to Clipboard">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                            <span>Copy</span>
-                        </button>
-
-                        <button id="download-btn" class="tool-btn" title="Download Report as Markdown">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            <span>Export .md</span>
-                        </button>
-
-                        <button id="print-btn" class="tool-btn" title="Print or Save as PDF">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                                <rect x="6" y="14" width="12" height="8"></rect>
-                            </svg>
-                            <span>Print</span>
-                        </button>
-
-                        <button id="clear-btn" class="tool-btn danger" title="Clear Review">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                            <span>Clear</span>
-                        </button>
+                    <div class="results-title-group"><span class="eyebrow" id="report-title">ANALYSIS OUTPUT</span><span id="report-status-badge" class="results-badge" role="status">Awaiting input</span></div>
+                    <div class="results-actions" aria-label="Report tools">
+                        <button id="toggle-view-btn" class="tool-btn" title="Toggle formatted document and Markdown" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14"/></svg><span id="toggle-view-text">Raw .md</span></button>
+                        <button id="copy-btn" class="tool-btn" title="Copy report Markdown" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></svg><span>Copy</span></button>
+                        <button id="download-btn" class="tool-btn" title="Download Markdown" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg><span>Export</span></button>
+                        <button id="print-btn" class="tool-btn" title="Print or save as PDF" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H3V9h18v9h-3M6 14h12v7H6z"/></svg><span>Print</span></button>
+                        <button id="clear-btn" class="tool-btn danger" title="Clear review" aria-label="Clear review" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg></button>
                     </div>
                 </div>
-
-                <!-- Markdown Content Container -->
-                <div id="results-content" class="markdown-body">
-                    <div class="empty-state">
-                        <div class="empty-icon-wrap">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                        </div>
-                        <h3>Ready for Cyber Review</h3>
-                        <p>Upload your IT or cybersecurity resume to receive an evidence-led review, prioritized findings, and exact edits.</p>
-                        
-                        <div class="empty-checklist">
-                            <div class="check-item">
-                                <span class="check-num">1</span>
-                                <span>Provide your free Gemini API key</span>
+                <div class="report-surface">
+                    <div id="results-content" class="markdown-body" aria-busy="false">
+                        <div class="empty-state">
+                            <div class="document-topline"><span><span class="status-square"></span> REVIEW WORKSPACE</span><span>PDF / TXT → REPORT</span></div>
+                            <div class="empty-intro">
+                                <div class="scan-document" aria-hidden="true"><span class="scan-corner corner-tl"></span><span class="scan-corner corner-tr"></span><span class="scan-corner corner-bl"></span><span class="scan-corner corner-br"></span><div class="scan-sheet"><span class="scan-heading"></span><span class="scan-line"></span><span class="scan-line short"></span><span class="scan-divider"></span><span class="scan-line"></span><span class="scan-line"></span><span class="scan-line short"></span><span class="scan-highlight"></span></div><span class="scan-cross">+</span></div>
+                                <span class="document-index">READY WHEN YOU ARE</span>
+                                <h2>Put your experience<br>to the test.</h2>
+                                <p>Upload your resume and choose an analysis mode.<br class="desktop-break"> Get specific findings and edits grounded in your work.</p>
+                                <a class="sample-link" href="?demo=1">Preview a sample analysis <span aria-hidden="true">↗</span></a>
                             </div>
-                            <div class="check-item">
-                                <span class="check-num">2</span>
-                                <span>Upload a PDF or TXT cyber resume</span>
+                            <div class="review-outline">
+                                <p class="eyebrow">FOUR LENSES. ONE CLEARER RESUME.</p>
+                                <div class="outline-grid">
+                                    <div class="outline-row"><span class="outline-number">01 / PARSE</span><h3>Structure &amp; readability</h3><p>How well your resume can be extracted and read.</p></div>
+                                    <div class="outline-row"><span class="outline-number">02 / SCAN</span><h3>First impression</h3><p>What stands out in a quick review.</p></div>
+                                    <div class="outline-row"><span class="outline-number">03 / VERIFY</span><h3>Technical evidence</h3><p>The scope and context behind your claims.</p></div>
+                                    <div class="outline-row"><span class="outline-number">04 / ALIGN</span><h3>Role alignment</h3><p>How your experience supports your target role.</p></div>
+                                </div>
                             </div>
-                            <div class="check-item">
-                                <span class="check-num">3</span>
-                                <span>Click Analyze for evidence-backed critique & rewrites</span>
-                            </div>
+                            <div class="document-footer"><span>EVIDENCE OVER KEYWORDS</span><span>No invented credentials. No arbitrary scores.</span></div>
                         </div>
                     </div>
                 </div>
+                <div class="workspace-footnote"><span>Your resume is the source of truth.</span><span>ANALYZE / REFINE / APPLY</span></div>
             </section>
         </main>
+        <footer class="app-footer"><span>Cyber Resume Reviewer</span><span>Built by Vindex Tools</span></footer>
     </div>
-
-    <!-- Toast Container for modern non-blocking alerts -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <!-- Marked.js for markdown parsing -->
+    <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
-    
-    <!-- PDF.js for local PDF text extraction -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-    <!-- Main Logic -->
+    <script src="providers.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

@@ -45,6 +45,14 @@ const downloadBtn = document.getElementById('download-btn');
 const printBtn = document.getElementById('print-btn');
 const clearBtn = document.getElementById('clear-btn');
 const toastContainer = document.getElementById('toast-container');
+const initialReportMarkup = resultsContent.innerHTML;
+const connectionSettings = document.getElementById('connection-settings');
+
+function setReportToolsEnabled(enabled) {
+    [toggleViewBtn, copyBtn, downloadBtn, printBtn, clearBtn].forEach(button => {
+        button.disabled = !enabled;
+    });
+}
 
 // State Variables
 let uploadedFile = null;
@@ -84,7 +92,7 @@ function showToast(message, type = 'info', duration = 3500) {
 
     toast.innerHTML = `
         <span class="toast-icon">${iconSvg}</span>
-        <span>${message}</span>
+        <span>${escapeHtml(String(message))}</span>
     `;
 
     toastContainer.appendChild(toast);
@@ -96,7 +104,7 @@ function showToast(message, type = 'info', duration = 3500) {
 
     setTimeout(() => {
         toast.classList.remove('show');
-        toast.addEventListener('transitionend', () => toast.remove());
+        setTimeout(() => toast.remove(), 220);
     }, duration);
 }
 
@@ -105,7 +113,7 @@ function showToast(message, type = 'info', duration = 3500) {
 // ==========================================================================
 
 function initTheme() {
-    const savedTheme = localStorage.getItem('resume_reviewer_theme');
+    const savedTheme = localStorage.getItem('resume_reviewer_cyber_theme');
     if (savedTheme === 'light') {
         document.body.classList.add('light-theme');
         updateThemeIcon(true);
@@ -116,6 +124,7 @@ function initTheme() {
 }
 
 function updateThemeIcon(isLight) {
+    themeToggleBtn.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
     if (isLight) {
         // Show Moon icon when in light mode (to toggle to dark)
         themeIcon.innerHTML = `
@@ -139,7 +148,7 @@ function updateThemeIcon(isLight) {
 
 themeToggleBtn.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light-theme');
-    localStorage.setItem('resume_reviewer_theme', isLight ? 'light' : 'dark');
+    localStorage.setItem('resume_reviewer_cyber_theme', isLight ? 'light' : 'dark');
     updateThemeIcon(isLight);
     showToast(isLight ? 'Switched to Light theme' : 'Switched to Dark theme', 'info', 1800);
 });
@@ -148,313 +157,224 @@ themeToggleBtn.addEventListener('click', () => {
 // API KEY MANAGEMENT & PERSISTENCE
 // ==========================================================================
 
-// Model State Tracking
+const providerSelect = document.getElementById('provider-select');
+const providerLabel = document.getElementById('provider-label');
+const apiKeyLink = document.getElementById('api-key-link');
+const privacyNote = document.getElementById('privacy-note');
+const providerConfigs = ReviewProviders.providers;
+let activeProvider = '';
 let modelsLoaded = false;
+let queryVersion = 0;
+let queryController = null;
+let reviewBusy = false;
+const providerSessions = new Map();
 
-function resetModelSelect(placeholderText = 'Paste API key or query models...') {
-    modelsLoaded = false;
-    modelSelect.innerHTML = `<option value="" disabled selected>${placeholderText}</option>`;
-    modelSelect.classList.add('is-placeholder');
-    const hasKey = apiKeyInput && apiKeyInput.value.trim().length > 10;
-    if (hasKey) {
-        modelStatusHint.textContent = 'Click Query Models';
-        modelStatusHint.style.color = 'var(--accent-cyan)';
-    } else {
-        modelStatusHint.textContent = 'Awaiting API Key';
-        modelStatusHint.style.color = 'var(--text-muted)';
-    }
+function readSetting(name) {
+    try { return localStorage.getItem(name); } catch { return null; }
 }
 
-// Curated list of primary Gemini models suitable for resume review
-const CURATED_MODELS = [
-    {
-        id: 'gemini-3.6-flash',
-        aliases: ['gemini-3.6-flash'],
-        label: 'Gemini 3.6 Flash (Recommended - Fast & Free Tier)'
-    },
-    {
-        id: 'gemini-3.8-flash',
-        aliases: ['gemini-3.8-flash'],
-        label: 'Gemini 3.8 Flash (Latest Flagship)'
-    },
-    {
-        id: 'gemini-3.7-flash',
-        aliases: ['gemini-3.7-flash'],
-        label: 'Gemini 3.7 Flash'
-    },
-    {
-        id: 'gemini-3.5-flash',
-        aliases: ['gemini-3.5-flash'],
-        label: 'Gemini 3.5 Flash'
-    },
-    {
-        id: 'gemini-flash-latest',
-        aliases: ['gemini-flash-latest'],
-        label: 'Gemini Flash (Latest Auto-Updating)'
-    },
-    {
-        id: 'gemini-2.5-pro',
-        aliases: ['gemini-2.5-pro'],
-        label: 'Gemini 2.5 Pro (Deep Evidence Review)'
-    },
-    {
-        id: 'gemini-2.5-flash-lite',
-        aliases: ['gemini-2.5-flash-lite'],
-        label: 'Gemini 2.5 Flash-Lite (Lightweight)'
-    },
-    {
-        id: 'gemini-2.0-flash',
-        aliases: ['gemini-2.0-flash-001', 'gemini-2.0-flash-exp'],
-        label: 'Gemini 2.0 Flash'
-    },
-    {
-        id: 'gemini-1.5-pro',
-        aliases: ['gemini-1.5-pro-latest', 'gemini-1.5-pro-002', 'gemini-1.5-pro-001'],
-        label: 'Gemini 1.5 Pro'
-    },
-    {
-        id: 'gemini-1.5-flash',
-        aliases: ['gemini-1.5-flash-latest', 'gemini-1.5-flash-002', 'gemini-1.5-flash-001'],
-        label: 'Gemini 1.5 Flash'
-    }
-];
-
-async function discoverAvailableModels(apiKey, isManual = false) {
-    if (!apiKey || apiKey.length < 10) {
-        if (isManual) {
-            showToast('Please paste your Gemini API key first.', 'info');
-            apiKeyInput.focus();
-        }
-        resetModelSelect('Paste API key or query models...');
-        return null;
-    }
-
-    // Set button loading state
-    if (fetchModelsBtn && connectBtnText) {
-        fetchModelsBtn.classList.add('is-loading');
-        fetchModelsBtn.disabled = true;
-        connectBtnText.textContent = 'Querying...';
-    }
-    modelStatusHint.textContent = 'Querying Google models...';
-    modelStatusHint.style.color = 'var(--text-muted)';
-
+function saveSetting(name, value) {
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await res.json();
+        if (value === null) localStorage.removeItem(name);
+        else localStorage.setItem(name, value);
+        return true;
+    } catch { return false; }
+}
 
-        if (!res.ok) {
-            const err = data.error?.message || 'Failed to query models.';
-            resetModelSelect('Invalid API key — query failed');
-            modelStatusHint.textContent = 'API key error';
-            modelStatusHint.style.color = 'var(--accent-rose)';
-            if (isManual) showToast(`API Key Error: ${err}`, 'error', 4500);
-            return null;
+function keyStorageName(provider) { return `resume_reviewer_key_${provider}`; }
+
+function getProviderSession(provider) {
+    if (!providerSessions.has(provider)) {
+        const key = readSetting(keyStorageName(provider)) || '';
+        providerSessions.set(provider, { key, remember: Boolean(key), models: [], selected: '', unavailable: new Set() });
+    }
+    return providerSessions.get(provider);
+}
+
+function updateConnectionControls() {
+    const hasProvider = Boolean(activeProvider);
+    providerSelect.disabled = reviewBusy;
+    apiKeyInput.disabled = !hasProvider || reviewBusy;
+    rememberKeyCheckbox.disabled = !hasProvider || reviewBusy;
+    toggleKeyVisibilityBtn.disabled = !hasProvider || reviewBusy;
+    fetchModelsBtn.disabled = !hasProvider || reviewBusy || Boolean(queryController);
+    modelSelect.disabled = !modelsLoaded || reviewBusy || Boolean(queryController);
+    analyzeBtn.disabled = reviewBusy || Boolean(queryController);
+    connectBtnText.textContent = queryController ? 'Querying…' : 'Query Models';
+}
+
+function resetModelSelect(message) {
+    modelsLoaded = false;
+    const hasKey = Boolean(apiKeyInput.value.trim());
+    const option = new Option(message || (hasKey ? 'Click Query Models to load models' : 'Enter your API key first'), '', true, true);
+    option.disabled = true;
+    modelSelect.replaceChildren(option);
+    modelSelect.classList.add('is-placeholder');
+    modelStatusHint.textContent = hasKey ? 'Click Query Models' : 'Awaiting API key';
+    modelStatusHint.style.color = hasKey ? 'var(--accent-cyan)' : 'var(--text-muted)';
+    updateConnectionControls();
+}
+
+function renderModels(session, autoSelect = true) {
+    if (!session.models.length) { resetModelSelect(); return; }
+    const available = session.models.filter(model => !session.unavailable.has(model.id));
+    modelSelect.replaceChildren(...session.models.map(model => {
+        const label = model.label === model.id ? model.id : `${model.label} · ${model.id}`;
+        const option = new Option(label + (session.unavailable.has(model.id) ? ' (unavailable for this key)' : ''), model.id);
+        option.disabled = session.unavailable.has(model.id);
+        return option;
+    }));
+    const selected = available.find(model => model.id === session.selected) || (autoSelect ? available[0] : null);
+    if (!selected) {
+        const placeholder = new Option(available.length ? 'Choose another model' : 'No usable models — query again', '', true, true);
+        placeholder.disabled = true;
+        modelSelect.prepend(placeholder);
+    }
+    modelSelect.value = selected?.id || '';
+    session.selected = modelSelect.value;
+    modelsLoaded = available.length > 0;
+    modelSelect.classList.toggle('is-placeholder', !selected);
+    modelStatusHint.textContent = `${available.length} text models available`;
+    modelStatusHint.style.color = 'var(--accent-emerald)';
+    updateConnectionControls();
+}
+
+function cancelModelQuery() {
+    queryVersion++;
+    queryController?.abort();
+    queryController = null;
+}
+
+function selectProvider(provider) {
+    cancelModelQuery();
+    const enabledOption = Array.from(providerSelect.options).find(option => option.value === provider && !option.disabled);
+    activeProvider = enabledOption && Object.hasOwn(providerConfigs, provider) ? provider : 'gemini';
+    providerSelect.value = activeProvider;
+    saveSetting('resume_reviewer_provider', activeProvider);
+    const info = providerConfigs[activeProvider];
+    const session = activeProvider ? getProviderSession(activeProvider) : null;
+    providerLabel.textContent = info?.name || 'Select provider';
+    apiKeyInput.value = session?.key || '';
+    apiKeyInput.type = 'password';
+    toggleKeyVisibilityBtn.setAttribute('aria-label', 'Show API key');
+    eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+    apiKeyInput.placeholder = info ? `Paste your ${info.name} API key` : 'Choose an AI provider first';
+    rememberKeyCheckbox.checked = session?.remember || false;
+    apiKeyLink.classList.toggle('hidden', !info);
+    if (info) apiKeyLink.href = info.keyUrl;
+    else apiKeyLink.removeAttribute('href');
+    privacyNote.textContent = `Files are read in your browser. Resume text and any job description are sent to ${info?.company || 'your selected provider'} when you run analysis.`;
+    if (session?.models.length) renderModels(session);
+    else resetModelSelect(info ? undefined : 'Choose an AI provider first');
+    if (!info) modelStatusHint.textContent = 'Select a provider';
+}
+
+async function discoverAvailableModels() {
+    if (reviewBusy) return;
+    if (!activeProvider) { providerSelect.focus(); return; }
+    const key = apiKeyInput.value.trim();
+    if (!key) {
+        showToast(`Enter your ${providerConfigs[activeProvider].name} API key first.`, 'info');
+        apiKeyInput.focus();
+        return;
+    }
+    cancelModelQuery();
+    const version = queryVersion;
+    const provider = activeProvider;
+    const session = getProviderSession(provider);
+    if (session.key !== key) {
+        session.models = [];
+        session.selected = '';
+        session.unavailable.clear();
+        resetModelSelect();
+    }
+    session.key = key;
+    const controller = new AbortController();
+    queryController = controller;
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    modelStatusHint.textContent = `Querying ${providerConfigs[provider].name}…`;
+    modelStatusHint.style.color = 'var(--text-muted)';
+    updateConnectionControls();
+    try {
+        const models = await ReviewProviders.listModels(provider, key, { signal: controller.signal });
+        if (version !== queryVersion || provider !== activeProvider || key !== apiKeyInput.value.trim()) return;
+        session.models = models;
+        if (!models.length) {
+            session.selected = '';
+            resetModelSelect('No compatible text models returned');
+            modelStatusHint.textContent = 'No text models found';
+            showToast('This key returned no compatible text models. Check its model permissions.', 'info');
+            return;
         }
-
-        if (!data.models || !Array.isArray(data.models)) {
-            resetModelSelect('No models returned for this key');
-            modelStatusHint.textContent = 'No models found';
-            modelStatusHint.style.color = 'var(--accent-rose)';
-            return null;
-        }
-
-        // Get all model IDs supporting generateContent
-        const returnedIds = data.models
-            .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
-            .map(m => m.name.replace(/^models\//, ''));
-
-        // Match against our clean curated list (prevents 40 messy internal duplicates)
-        const matchedCurated = [];
-        CURATED_MODELS.forEach(curated => {
-            if (returnedIds.includes(curated.id)) {
-                matchedCurated.push({ id: curated.id, label: curated.label });
-            } else {
-                const foundAlias = curated.aliases.find(a => returnedIds.includes(a));
-                if (foundAlias) {
-                    matchedCurated.push({ id: foundAlias, label: curated.label });
-                }
-            }
-        });
-
-        // Exclude deprecated endpoints and specialized non-text models (tts, audio, video, robotics, embeddings)
-        const DEPRECATED_OR_UNSUPPORTED = [
-            'gemini-2.5-flash',
-            'embedding',
-            'aqa',
-            'imagen',
-            'gemma',
-            'tts',
-            'veo',
-            'lyria',
-            'transcribe',
-            'robotics',
-            'banana',
-            'audio'
-        ];
-
-        const matchedIds = matchedCurated.map(m => m.id);
-        const otherModels = returnedIds.filter(id => {
-            const lower = id.toLowerCase();
-            if (matchedIds.includes(id)) return false;
-            return !DEPRECATED_OR_UNSUPPORTED.some(term => lower.includes(term));
-        });
-
-        if (matchedCurated.length > 0 || otherModels.length > 0) {
-            const previousSelection = modelSelect.value;
-            modelsLoaded = true;
-            modelSelect.classList.remove('is-placeholder');
-            modelSelect.innerHTML = '';
-
-            // 1. Primary Curated Optgroup
-            const curatedGroup = document.createElement('optgroup');
-            curatedGroup.label = 'Recommended Models';
-            matchedCurated.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.id;
-                opt.textContent = m.label;
-                curatedGroup.appendChild(opt);
-            });
-            modelSelect.appendChild(curatedGroup);
-
-            // 2. Optional Raw Models Optgroup for advanced users
-            if (otherModels.length > 0) {
-                const otherGroup = document.createElement('optgroup');
-                otherGroup.label = `Other Available Endpoints (${otherModels.length})`;
-                otherModels.forEach(id => {
-                    const opt = document.createElement('option');
-                    opt.value = id;
-                    opt.textContent = id;
-                    otherGroup.appendChild(opt);
-                });
-                modelSelect.appendChild(otherGroup);
-            }
-
-            // Preserve user's previous selection if it is still available, otherwise default to Gemini 3.6 Flash
-            if (previousSelection && (matchedIds.includes(previousSelection) || otherModels.includes(previousSelection))) {
-                modelSelect.value = previousSelection;
-            } else {
-                const bestDefault = matchedCurated.find(m => m.id.includes('3.6-flash')) 
-                    || matchedCurated.find(m => m.id.includes('3.8-flash'))
-                    || matchedCurated.find(m => m.id.includes('flash-latest'))
-                    || matchedCurated.find(m => m.id.includes('2.0-flash')) 
-                    || matchedCurated[0];
-                if (bestDefault) {
-                    modelSelect.value = bestDefault.id;
-                }
-            }
-
-            modelStatusHint.textContent = `✓ ${matchedCurated.length} recommended models ready`;
-            modelStatusHint.style.color = 'var(--accent-emerald)';
-
-            if (isManual) {
-                showToast(`Connected! Loaded ${matchedCurated.length} recommended Gemini models.`, 'success', 3000);
-            }
-
-            return matchedCurated.map(m => m.id).concat(otherModels);
-        }
-    } catch (e) {
-        console.warn('Could not query models:', e);
-        resetModelSelect('Connection error — click Query Models to retry');
-        modelStatusHint.textContent = 'Connection error';
+        renderModels(session);
+        showToast(`Loaded ${models.length} ${providerConfigs[provider].name} text models.`, 'success');
+    } catch (error) {
+        if (version !== queryVersion) return;
+        // A refresh failure must not discard a valid choice for this same key.
+        if (session.models.length) renderModels(session);
+        else resetModelSelect('Query failed — try again');
+        modelStatusHint.textContent = session.models.length ? 'Refresh failed · previous list kept' : 'Query failed';
         modelStatusHint.style.color = 'var(--accent-rose)';
-        if (isManual) showToast('Could not connect to Google API. Check your internet connection.', 'error');
+        showToast(controller.signal.aborted ? 'Model query timed out. Try again.' : error.message, 'error', 5000);
     } finally {
-        if (fetchModelsBtn && connectBtnText) {
-            fetchModelsBtn.classList.remove('is-loading');
-            fetchModelsBtn.disabled = false;
-            connectBtnText.textContent = modelsLoaded ? 'Connected ✓' : 'Query Models';
-            if (modelsLoaded) {
-                setTimeout(() => {
-                    connectBtnText.textContent = 'Query Models';
-                }, 3000);
-            }
+        clearTimeout(timeout);
+        if (version === queryVersion) {
+            queryController = null;
+            updateConnectionControls();
         }
     }
-    return null;
 }
 
 function initApiKey() {
-    const savedKey = localStorage.getItem('gemini_api_key');
-    if (savedKey) {
-        apiKeyInput.value = savedKey;
-        rememberKeyCheckbox.checked = true;
-        resetModelSelect('Click Query Models to load models...');
-        modelStatusHint.textContent = 'Key saved • Click Query Models';
-        modelStatusHint.style.color = 'var(--accent-cyan)';
-    } else {
-        resetModelSelect('Paste API key or query models...');
+    // Preserve existing Gemini users without ever reusing their key for another provider.
+    const legacyKey = readSetting('gemini_api_key');
+    if (legacyKey && !readSetting(keyStorageName('gemini'))) {
+        if (saveSetting(keyStorageName('gemini'), legacyKey)) saveSetting('gemini_api_key', null);
     }
+    selectProvider(readSetting('resume_reviewer_provider') || 'gemini');
 }
 
-// Allow clicking the dropdown placeholder to prompt user or trigger query
-modelSelect.addEventListener('mousedown', (e) => {
-    if (!modelsLoaded) {
-        e.preventDefault();
-        const key = apiKeyInput.value.trim();
-        if (!key || key.length < 10) {
-            apiKeyInput.focus();
-            showToast('Please paste your Gemini API key first.', 'info');
-        } else {
-            discoverAvailableModels(key, true);
-        }
-    }
+providerSelect.addEventListener('change', () => selectProvider(providerSelect.value));
+fetchModelsBtn.addEventListener('click', discoverAvailableModels);
+modelSelect.addEventListener('change', () => {
+    if (activeProvider) getProviderSession(activeProvider).selected = modelSelect.value;
 });
-
-// Query Models button click
-if (fetchModelsBtn) {
-    fetchModelsBtn.addEventListener('click', () => {
-        const key = apiKeyInput.value.trim();
-        discoverAvailableModels(key, true);
-    });
-}
-
-// Paste event: Store if remember is checked, and prompt to query
-apiKeyInput.addEventListener('paste', () => {
-    setTimeout(() => {
-        const pastedKey = apiKeyInput.value.trim();
-        if (pastedKey.length > 10) {
-            if (rememberKeyCheckbox.checked) {
-                localStorage.setItem('gemini_api_key', pastedKey);
-            }
-            if (!modelsLoaded) {
-                modelSelect.innerHTML = `<option value="" disabled selected>Click Query Models to load models...</option>`;
-                modelStatusHint.textContent = 'Key pasted • Click Query Models';
-                modelStatusHint.style.color = 'var(--accent-cyan)';
-                showToast('Key pasted! Click "Query Models" to load available models.', 'info', 3000);
-            }
-        }
-    }, 50);
-});
-
-rememberKeyCheckbox.addEventListener('change', () => {
-    if (rememberKeyCheckbox.checked) {
-        if (apiKeyInput.value.trim()) {
-            localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
-            showToast('API Key saved locally', 'success', 2000);
-        }
-    } else {
-        localStorage.removeItem('gemini_api_key');
-        showToast('API Key removed from local storage', 'info', 2000);
-    }
-});
-
 apiKeyInput.addEventListener('input', () => {
-    const key = apiKeyInput.value.trim();
-    if (rememberKeyCheckbox.checked) {
-        localStorage.setItem('gemini_api_key', key);
+    if (!activeProvider) return;
+    cancelModelQuery();
+    const session = getProviderSession(activeProvider);
+    session.key = apiKeyInput.value.trim();
+    session.models = [];
+    session.selected = '';
+    session.unavailable.clear();
+    if (session.remember && !saveSetting(keyStorageName(activeProvider), session.key || null)) {
+        session.remember = false;
+        rememberKeyCheckbox.checked = false;
+        showToast('Browser storage is unavailable. This key will stay in memory for this session.', 'info');
     }
-    if (!key) {
-        resetModelSelect('Paste API key or query models...');
-    } else if (!modelsLoaded) {
-        modelSelect.innerHTML = `<option value="" disabled selected>Click Query Models to load models...</option>`;
-        modelStatusHint.textContent = 'Click Query Models';
-        modelStatusHint.style.color = 'var(--accent-cyan)';
+    resetModelSelect();
+});
+rememberKeyCheckbox.addEventListener('change', () => {
+    if (!activeProvider) return;
+    const session = getProviderSession(activeProvider);
+    session.remember = rememberKeyCheckbox.checked;
+    session.key = apiKeyInput.value.trim();
+    if (activeProvider === 'gemini') saveSetting('gemini_api_key', null);
+    const saved = saveSetting(keyStorageName(activeProvider), session.remember ? session.key || null : null);
+    if (!saved) {
+        session.remember = false;
+        rememberKeyCheckbox.checked = false;
+        showToast('Browser storage is unavailable. The key is kept in memory only.', 'info');
+    } else {
+        showToast(session.remember ? 'This provider’s key will be remembered in this browser.' : 'Saved key removed for this provider.', 'info');
     }
 });
+
 
 toggleKeyVisibilityBtn.addEventListener('click', () => {
     const isPassword = apiKeyInput.type === 'password';
     apiKeyInput.type = isPassword ? 'text' : 'password';
+    toggleKeyVisibilityBtn.setAttribute('aria-label', isPassword ? 'Hide API key' : 'Show API key');
     
     eyeIcon.innerHTML = isPassword
         ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`
@@ -574,8 +494,12 @@ jobDescriptionInput.addEventListener('input', () => {
 
 modeCards.forEach(card => {
     card.addEventListener('click', () => {
-        modeCards.forEach(c => c.classList.remove('is-selected'));
+        modeCards.forEach(c => {
+            c.classList.remove('is-selected');
+            c.setAttribute('aria-pressed', 'false');
+        });
         card.classList.add('is-selected');
+        card.setAttribute('aria-pressed', 'true');
         const mode = card.getAttribute('data-mode');
         reviewModeSelect.value = mode;
     });
@@ -584,6 +508,7 @@ modeCards.forEach(card => {
 reviewModeSelect.addEventListener('change', () => {
     const selectedMode = reviewModeSelect.value;
     modeCards.forEach(card => {
+        card.setAttribute('aria-pressed', String(card.getAttribute('data-mode') === selectedMode));
         if (card.getAttribute('data-mode') === selectedMode) {
             card.classList.add('is-selected');
         } else {
@@ -618,9 +543,9 @@ Lead immediately with candidate-facing results:
 
 Preserve strengths as deliberately as you fix weaknesses. Be candid without ridicule, canned praise, or invented urgency. Use plain language and the candidate's voice. Deliver the full review in clean GitHub Flavored Markdown. Never output verification checklists, self-audits, or drafting scratchpads.`;
 
-async function fetchSkillPrompt() {
+async function fetchSkillPrompt(signal) {
     try {
-        const response = await fetch('skill/SKILL.md');
+        const response = await fetch('skill/SKILL.md', { signal });
         if (!response.ok) throw new Error('Skill fetch returned status ' + response.status);
         return await response.text();
     } catch (error) {
@@ -630,29 +555,59 @@ async function fetchSkillPrompt() {
 }
 
 // ==========================================================================
-// ANALYZE ACTION & GEMINI INTEGRATION
+// ANALYZE ACTION & SHARED PROVIDER INTEGRATION
 // ==========================================================================
 
 analyzeBtn.addEventListener('click', async () => {
+    if (reviewBusy) return;
+    if (!activeProvider) {
+        connectionSettings.open = true;
+        showToast('Choose an AI provider first.', 'info');
+        providerSelect.focus();
+        return;
+    }
+    const provider = activeProvider;
     const apiKey = apiKeyInput.value.trim();
     if (!apiKey) {
-        showToast('Please enter your Gemini API Key.', 'error');
+        showToast(`Enter your ${providerConfigs[provider].name} API key.`, 'error');
+        connectionSettings.open = true;
         apiKeyInput.focus();
+        return;
+    }
+    const chosenModel = getProviderSession(provider).models.find(model => model.id === modelSelect.value);
+    if (!modelsLoaded || !chosenModel || getProviderSession(provider).unavailable.has(chosenModel.id) || getProviderSession(provider).key !== apiKey || queryController) {
+        connectionSettings.open = true;
+        showToast('Query the available models and select one before running analysis.', 'info');
+        fetchModelsBtn.focus();
         return;
     }
     if (!resumeText) {
         showToast('Please upload a resume first.', 'error');
+        resumeUpload.focus();
         return;
     }
 
     const jobDesc = jobDescriptionInput.value.trim();
     const mode = reviewModeSelect.value;
+    const reviewResumeText = resumeText;
+
+    if (mode === 'tailor' && !jobDesc) {
+        showToast('Add a job description to tailor your resume to a role.', 'info');
+        jobDescriptionInput.focus();
+        return;
+    }
 
     // Enter Loading State
-    analyzeBtn.disabled = true;
+    reviewBusy = true;
+    updateConnectionControls();
+    const reviewController = new AbortController();
+    const reviewTimeout = setTimeout(() => reviewController.abort(), 180000);
+    latestMarkdown = '';
+    setReportToolsEnabled(false);
+    resultsContent.setAttribute('aria-busy', 'true');
     btnText.textContent = 'Reviewing...';
     loader.classList.remove('hidden');
-    reportStatusBadge.textContent = 'Analyzing with Gemini';
+    reportStatusBadge.textContent = `Analyzing with ${providerConfigs[provider].name}`;
     reportStatusBadge.style.color = 'var(--accent-primary)';
 
     resultsContent.innerHTML = `
@@ -663,8 +618,8 @@ analyzeBtn.addEventListener('click', async () => {
                 </svg>
             </div>
             <div>
-                <h3 class="analyzing-status">Conducting Evidence-Led Cyber Review</h3>
-                <p class="analyzing-subtext">Gemini is evaluating your resume against the 4-lens framework...</p>
+                <h3 class="analyzing-status">Analyzing your resume.</h3>
+                <p class="analyzing-subtext">Reviewing your experience, evidence, and wording. This may take a moment.</p>
             </div>
         </div>
     `;
@@ -687,7 +642,7 @@ analyzeBtn.addEventListener('click', async () => {
 - STRICT RULE: Do NOT flag dates in 2024, 2025, or ${currentYear} as "future dates", "inaccurate timelines", or "impossible dates". The calendar year is ${currentYear}.`;
 
         // Fetch skill instructions (from local file or built-in cyber framework)
-        let systemInstruction = await fetchSkillPrompt();
+        let systemInstruction = await fetchSkillPrompt(reviewController.signal);
         systemInstruction += temporalGrounding;
         
         // Build customized prompt based on selected review mode
@@ -715,58 +670,15 @@ analyzeBtn.addEventListener('click', async () => {
             userPrompt += `Deliverable: Complete Rewrite. Produce the complete rewrite now using established facts. Provide brief explanations of material changes.\n`;
         }
 
-        userPrompt += `\n--- MY RESUME ---\n${resumeText}\n`;
+        userPrompt += `\n--- MY RESUME ---\n${reviewResumeText}\n`;
         
         if (jobDesc) {
             userPrompt += `\n--- TARGET JOB DESCRIPTION ---\n${jobDesc}\n`;
         }
 
-        // Direct native fetch to Google Gemini REST API
-        // Eliminates third-party CDN / dynamic import CORS restrictions
-        const requestPayload = {
-            contents: [
-                {
-                    role: 'user',
-                    parts: [{ text: userPrompt }]
-                }
-            ],
-            generationConfig: {
-                temperature: 0.3
-            }
-        };
-
-        if (systemInstruction) {
-            requestPayload.systemInstruction = {
-                parts: [{ text: systemInstruction }]
-            };
-        }
-
-        const chosenModel = modelSelect.value || 'gemini-3.6-flash';
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${chosenModel}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestPayload)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            const errorMsg = data.error?.message || `API error (${response.status}): ${response.statusText}`;
-            throw new Error(errorMsg);
-        }
-
-        const candidate = data.candidates?.[0];
-        if (!candidate || !candidate.content?.parts?.[0]?.text) {
-            if (candidate?.finishReason === 'SAFETY') {
-                throw new Error('Analysis was filtered by Gemini safety guidelines. Please verify the uploaded text.');
-            }
-            throw new Error('No content returned from Gemini API. Please try again.');
-        }
-
-        const rawOutput = candidate.content.parts[0].text;
+        const rawOutput = await ReviewProviders.generateReview(provider, apiKey, chosenModel, systemInstruction, userPrompt, { signal: reviewController.signal });
         latestMarkdown = cleanMarkdownResponse(rawOutput);
+        if (!latestMarkdown.trim()) throw new Error('The provider returned no usable review. Try a different model.');
         
         isRawMarkdownView = false;
         updateReportDisplay();
@@ -777,11 +689,21 @@ analyzeBtn.addEventListener('click', async () => {
         showToast('Cyber resume review generated successfully!', 'success', 3000);
         
     } catch (error) {
-        console.error('Error during analysis:', error);
+        const errorMessage = reviewController.signal.aborted ? 'The review timed out. Try a shorter review or a different model.' : error.message;
         reportStatusBadge.textContent = 'Error';
         reportStatusBadge.style.color = 'var(--accent-rose)';
         
-        const failedModel = modelSelect.value || 'gemini-3.6-flash';
+        const failedModel = chosenModel.id;
+        const unavailable = error.code === 'model_unavailable';
+        const session = getProviderSession(provider);
+        let replacement = null;
+        if (unavailable && session.key === apiKey) {
+            session.unavailable.add(failedModel);
+            session.selected = '';
+            replacement = session.models.find(model => model.id === error.suggestedModel && !session.unavailable.has(model.id));
+            renderModels(session, false);
+            connectionSettings.open = true;
+        }
         resultsContent.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon-wrap" style="background: rgba(244, 63, 94, 0.12); color: var(--accent-rose);">
@@ -791,16 +713,46 @@ analyzeBtn.addEventListener('click', async () => {
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
                 </div>
-                <h3>Analysis Encountered an Issue</h3>
-                <p style="color: var(--accent-rose);">${escapeHtml(error.message || 'An error occurred during generation.')}</p>
-                <p class="analyzing-subtext">Selected model: <strong>${escapeHtml(failedModel)}</strong> (kept active — not changed). Check your API key quota or select another model from the dropdown.</p>
+                <h3>${unavailable ? 'This model is unavailable for your key.' : 'We couldn’t finish this review.'}</h3>
+                <p style="color: var(--accent-rose);">${escapeHtml(errorMessage || 'An error occurred during generation.')}</p>
+                <p class="analyzing-subtext">Review provider: <strong>${escapeHtml(providerConfigs[provider].name)}</strong> · Model: <strong>${escapeHtml(failedModel)}</strong>. ${unavailable ? 'The provider listed this model but rejected it for your account. Choose another model or refresh the list. Your resume is still loaded.' : 'Check that provider’s API key and quota, or select another model.'}</p>
+                ${unavailable ? `<div class="recovery-actions">${replacement ? `<button type="button" class="connect-btn" id="select-replacement-model">Select ${escapeHtml(replacement.id)}</button>` : ''}<button type="button" class="connect-btn" id="refresh-review-models">Refresh model list</button></div>` : ''}
             </div>
         `;
-        showToast(`Generation failed: ${error.message}`, 'error', 4500);
+        if (unavailable) {
+            const restoreProvider = () => {
+                if (reviewBusy) return false;
+                if (activeProvider !== provider) selectProvider(provider);
+                if (apiKeyInput.value.trim() !== apiKey) {
+                    showToast('The API key changed. Query models for the current key.', 'info');
+                    return false;
+                }
+                connectionSettings.open = true;
+                return true;
+            };
+            document.getElementById('select-replacement-model')?.addEventListener('click', () => {
+                if (!restoreProvider()) return;
+                if (!session.models.some(model => model.id === replacement.id) || session.unavailable.has(replacement.id)) {
+                    showToast('That model is no longer in the usable list. Query models again.', 'info');
+                    return;
+                }
+                session.selected = replacement.id;
+                renderModels(session);
+                analyzeBtn.focus();
+                showToast(`Selected ${replacement.id}. Click Run analysis to retry.`, 'info');
+            });
+            document.getElementById('refresh-review-models')?.addEventListener('click', () => {
+                if (restoreProvider()) discoverAvailableModels();
+            });
+        }
+        showToast(`Generation failed: ${errorMessage}`, 'error', 4500);
     } finally {
-        analyzeBtn.disabled = false;
-        btnText.textContent = 'Analyze Resume';
+        clearTimeout(reviewTimeout);
+        reviewBusy = false;
+        updateConnectionControls();
+        btnText.textContent = 'Run analysis';
         loader.classList.add('hidden');
+        resultsContent.setAttribute('aria-busy', 'false');
     }
 });
 
@@ -959,6 +911,7 @@ function renderFormattedReport(markdown) {
 
 function updateReportDisplay() {
     if (!latestMarkdown) return;
+    setReportToolsEnabled(true);
     
     if (isRawMarkdownView) {
         // Render Raw Markdown in high-readability wrapped container
@@ -1043,34 +996,10 @@ clearBtn.addEventListener('click', () => {
     isRawMarkdownView = false;
     if (toggleViewText) toggleViewText.textContent = 'Raw .md';
     if (toggleViewBtn) toggleViewBtn.classList.remove('is-active');
-    reportStatusBadge.textContent = 'Ready';
+    reportStatusBadge.textContent = 'Awaiting input';
     reportStatusBadge.style.color = '';
-    resultsContent.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-            </div>
-            <h3>Ready for Cyber Review</h3>
-            <p>Upload your IT or cybersecurity resume to receive an evidence-led review, prioritized findings, and exact edits.</p>
-            
-            <div class="empty-checklist">
-                <div class="check-item">
-                    <span class="check-num">1</span>
-                    <span>Provide your free Gemini API key</span>
-                </div>
-                <div class="check-item">
-                    <span class="check-num">2</span>
-                    <span>Upload a PDF or TXT cyber resume</span>
-                </div>
-                <div class="check-item">
-                    <span class="check-num">3</span>
-                    <span>Click Analyze for evidence-backed critique & rewrites</span>
-                </div>
-            </div>
-        </div>
-    `;
+    resultsContent.innerHTML = initialReportMarkup;
+    setReportToolsEnabled(false);
     showToast('Report cleared', 'info', 2000);
 });
 

@@ -1,16 +1,16 @@
 # Cyber Resume Reviewer — Agentic IT & Infosec Review
 
 [![Skill Version](https://img.shields.io/badge/Framework-Cyber%20Resume%20Reviewer%20v4.1-blue.svg)](https://github.com/mubix/cyber-resume-reviewer-skill)
-[![Gemini](https://img.shields.io/badge/AI%20Engine-Google%20Gemini%203.6%20%2F%202.0-emerald.svg)](https://aistudio.google.com/)
+[![Providers](https://img.shields.io/badge/AI-Gemini-0891b2.svg)](#ai-providers)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Client--Side-purple.svg)](#privacy--security)
 [![License](https://img.shields.io/badge/License-MIT-gray.svg)](#)
 
 > [!NOTE]
-> **Shoutout to Mubix:** Huge thanks to **[Rob Fuller (Mubix)](https://github.com/mubix)** for creating the phenomenal baseline [Cyber Resume Reviewer Skill](https://github.com/mubix/cyber-resume-reviewer-skill) and providing the inspiration to build this interactive tool for students, career changers, and IT/cybersecurity professionals.
+> **Credits:** Built by **Vindex Tools**, using a modified version of the [Cyber Resume Reviewer Skill](https://github.com/mubix/cyber-resume-reviewer-skill) originally created by [Rob Fuller (Mubix)](https://github.com/mubix).
 
 A sleek, privacy-first web application designed for IT and cybersecurity professionals to receive evidence-led resume reviews, job description alignment, and exact technical bullet transformations.
 
-Powered by Google's native Gemini REST API and the [Cyber Resume Reviewer Framework](https://github.com/mubix/cyber-resume-reviewer-skill) (v4.1), this application evaluates resumes through a rigorous 4-lens assessment model—focusing on verifiable technical achievements rather than generic keyword stuffing or arbitrary scores.
+Gemini is the default provider; use your own Gemini API key. OpenAI (GPT) and Anthropic (Claude) support is in development and unavailable in the provider selector. The shared review instructions come from `skill/SKILL.md`, alongside the selected deliverable, resume text, and optional job description. Vindex Tools' adaptation of the [Cyber Resume Reviewer Framework](https://github.com/mubix/cyber-resume-reviewer-skill) (v4.1) focuses on verifiable technical achievements rather than keyword stuffing or arbitrary scores.
 
 ---
 
@@ -19,13 +19,31 @@ Powered by Google's native Gemini REST API and the [Cyber Resume Reviewer Framew
 ### 🛡️ 100% Client-Side Execution & Privacy
 - **Zero Backend:** Runs entirely in your browser.
 - **In-Browser Document Parsing:** PDF parsing is performed locally via `PDF.js` (v3.11); plain text (`.txt`) is read directly via the browser File API.
-- **Direct REST Calls:** API requests travel directly from your browser to Google’s official Gemini REST endpoints (`generativelanguage.googleapis.com`). No intermediate proxy, database, or analytics tracking.
-- **Local Key Storage:** Optional `localStorage` persistence with masked input and show/hide visibility toggles.
+- **Direct REST Calls:** Requests go from your browser to the selected provider's official API. No intermediate proxy, database, or analytics tracking.
+- **Local Key Storage:** Keys stay in memory unless you enable **Remember key** for that provider. Each provider has separate storage and a masked input. Existing saved Gemini keys are migrated automatically.
 
 ### 🤖 Intelligent Model Querying & Selection
-- **Dynamic Endpoint Discovery:** Click **Query Models** to validate your Gemini API key and query Google's API for available models on your account.
-- **Curated Recommendations:** Intelligently maps and surfaces optimal models (such as `gemini-3.6-flash`, `gemini-3.8-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-flash-latest`), while still exposing other discovered endpoints.
-- **Fault-Tolerant:** Retains your selected model even if temporary quota or network errors occur.
+- **Live Discovery:** Gemini is selected automatically. Enter its key and click **Query Models**. The app loads the account's model list, including additional pages, and filters for text review models. It does not invent model IDs or assume a fixed latest model.
+- **Gemini Defaults:** Newer stable Gemini versions appear first, with Flash preferred at the same version. An existing usable selection is preserved. Older and preview models remain selectable because account access can differ.
+- **Unavailable Models:** If Gemini lists a model but rejects it as retired or unavailable for your account, the app disables that model for the current key and session. It offers a button to select Google's suggested replacement only when that model is in your returned list, plus a model-list refresh action. You explicitly run the next analysis; the app does not automatically retry a paid request. Changing the key or reloading clears this session's rejected-model cache.
+- **Provider Isolation:** Keys are stored separately per provider. Previously saved GPT or Claude preferences fall back to Gemini without reusing those keys. Changing a key invalidates its old model list. Late responses from a previous query cannot replace the current models.
+- **Fault-Tolerant:** A failed refresh preserves an already loaded list for the same key. Authentication, quota, network, empty-list, timeout, and incomplete-generation errors are shown without changing to another model or provider.
+
+### AI providers
+
+| Provider | Status | Model discovery | Review endpoint | API key |
+| :--- | :--- | :--- | :--- | :--- |
+| Google · Gemini | Available · default | `GET /v1beta/models` | `generateContent` | [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| OpenAI · GPT | In development · disabled | `GET /v1/models` | Responses; Chat Completions for legacy/chat-only models | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| Anthropic · Claude | In development · disabled | `GET /v1/models` | Messages | [Claude Console](https://platform.claude.com/settings/keys) |
+
+API billing and access are separate from consumer chat subscriptions. A model appearing in the list does not guarantee sufficient quota to generate a review. OpenAI's list does not supply endpoint capabilities, so the app filters known text-model families and excludes specialized image, audio, search, and coding endpoints.
+
+The app sends the shared skill as instructions; it does not install native provider skills or execute the skill's linked scripts and reference files remotely. Markdown cleanup, report viewing, copying, exporting, and printing are shared across all providers.
+
+This is a browser-based, bring-your-own-key tool. Only enter keys on a copy you trust; browser keys are accessible to scripts on that page, and remembered keys are not encrypted. Claude requests include the browser-access header used by Anthropic's SDK. If a provider or network blocks direct browser requests, the app reports the connection failure; it does not send credentials through a third-party proxy.
+
+API references: [OpenAI model listing](https://developers.openai.com/api/reference/resources/models/methods/list), [OpenAI Responses](https://developers.openai.com/api/reference/cli/resources/responses/methods/create), [Claude model listing](https://platform.claude.com/docs/en/api/models/list), [Claude Messages](https://platform.claude.com/docs/en/api/messages/create), [Gemini models](https://ai.google.dev/api/models), and [Gemini generation](https://ai.google.dev/api/generate-content).
 
 ### 🎯 Evidence-Led Review Framework
 Evaluates candidate documents through four core evaluation lenses:
@@ -43,7 +61,7 @@ Evaluates candidate documents through four core evaluation lenses:
 ### 🧠 Intelligent Guardrails & Temporal Grounding
 - **Dynamic Calendar Anchoring:** Automatically injects the real-world calendar date and year into the model's context, preventing AI hallucination from flagging present or recent roles (2024–present) as "future dates".
 - **Strict Anti-Self-Talk Filter:** Enforces silent validation reasoning and automatically strips internal drafting scratchpads, verification audits, and self-checks (e.g., `*Check:* Did I invent metrics?`), leaving only crisp, candidate-facing feedback.
-- **Offline Resilience:** Dynamic fallback prompt ensures the application works seamlessly even when served offline or without local server access.
+- **Instruction Fallback:** If the local skill file cannot be loaded, all providers receive the same built-in fallback instructions. Generating a review still requires an internet connection.
 
 ### 📊 Executive Report Viewer & Productivity Tools
 - **Dual-View Toggle:** Switch between a styled **Formatted Document View** (with executive print headers, responsive tables, and color-coded Before/After diff tags) and a **Raw Markdown View** (`.md`).
@@ -53,9 +71,11 @@ Evaluates candidate documents through four core evaluation lenses:
   - Dedicated print stylesheet for clean **Save as PDF** or physical printing.
 - **Instant Demo Mode:** Append `?demo=1` to the URL to instantly preview a sample executive report without an API key or resume upload.
 
-### 🎨 Modern Executive Design
-- **Theme Modes:** One-click toggle between sleek Dark Slate and crisp Light mode (persisted across sessions).
-- **Subtle Ambient Styling:** Glassmorphism, smooth micro-animations, and responsive layouts tailored for mobile, tablet, and widescreen displays.
+### 🎨 Cyber / Tech Workspace
+- **Theme Modes:** Graphite dark theme by default, with cyan accents and an optional cool light theme. Your choice is saved across sessions.
+- **Technical workspace:** Compact panels, sans-serif headings, monospace labels, and a structured analysis viewer adapt to mobile, tablet, and desktop screens.
+- **Accessible controls:** Keyboard-operable review choices, visible focus indicators, reduced-motion support, and report tools that activate when a result is available.
+- **Model connection:** API key and model settings live in a collapsible section at the top of the input panel, above the resume upload. Sample reports are linked from the page introduction and empty report.
 - **Toast Alerts:** Non-blocking notifications for uploads, copies, and state changes.
 
 ---
@@ -64,7 +84,7 @@ Evaluates candidate documents through four core evaluation lenses:
 
 ### 1. Prerequisites
 - A modern web browser (Chrome, Edge, Firefox, Brave, Safari).
-- A free Google Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+- An API key with model access and sufficient quota from one of the providers listed above.
 
 ### 2. How to Run Locally
 
@@ -90,12 +110,12 @@ Deploy directly to GitHub Pages, Cloudflare Pages, Netlify, or Vercel with zero 
 
 ## 📖 Step-by-Step Usage
 
-1. **Enter API Key:** Paste your Gemini API key in the configuration panel.
-2. **Select Model:** Click **Query Models** to auto-detect and select your preferred model (default: `Gemini 3.6 Flash`).
+1. **Enter Your Key:** Gemini is selected by default in **Model connection**. Enter your Gemini API key. GPT and Claude are marked **In development** and cannot be selected.
+2. **Select Model:** Click **Query Models**, then select a returned text model. Model discovery must complete before running analysis.
 3. **Upload Resume:** Drag & drop or click to upload your resume (`.pdf` or `.txt`).
 4. **(Optional) Target Job Description:** Paste a target cybersecurity job description (e.g., SOC Analyst, Cloud Security, AppSec, GRC, PenTester) to enable custom requirement mapping.
 5. **Select Review Objective:** Choose between *Full Review*, *Tailor to JD*, *Quick Priorities*, or *Complete Rewrite*.
-6. **Click Analyze:** Review the candidate-facing assessment, copy the markdown, or export to PDF.
+6. **Click Run analysis:** Review the candidate-facing assessment, copy the markdown, or export to PDF.
 
 ---
 
@@ -108,8 +128,8 @@ Deploy directly to GitHub Pages, Cloudflare Pages, Netlify, or Vercel with zero 
    - **Framework Instructions:** Loads `skill/SKILL.md` dynamically (with automatic fallback prompt).
 
 2. **Inference & Intelligence Layer**
-   - **Direct REST Connection:** Browser communicates directly with `generativelanguage.googleapis.com` via HTTPS.
-   - **Dynamic Model Selection:** Supports all Gemini endpoints on your key (`Gemini 3.6 Flash`, `Gemini 3.8 Flash`, `Gemini 2.5 Pro`, `Gemini 2.0 Flash`, etc.).
+   - **Direct REST Connection:** `providers.js` handles authentication, pagination, request formats, and response parsing for `generativelanguage.googleapis.com`, `api.openai.com`, and `api.anthropic.com`.
+   - **Dynamic Model Selection:** The selected model comes from the selected provider's live model list. No automatic cross-provider fallback occurs.
 
 3. **Sanitization & Executive Presentation Layer**
    - **Direct Output Filter:** Strips AI self-checks, drafting thoughts, and verification checklists.
@@ -122,10 +142,10 @@ Deploy directly to GitHub Pages, Cloudflare Pages, Netlify, or Vercel with zero 
 
 | Factor | Implementation |
 | :--- | :--- |
-| **Document Processing** | Parsed directly in browser memory; never uploaded to any third-party backend. |
-| **API Transmission** | HTTPS request sent directly from client to Google's official Gemini endpoint. |
-| **API Key Storage** | Kept in memory or stored optionally in your browser's private `localStorage`. |
-| **Data Retention** | No analytics, trackers, cookies, or external logs collected by this tool. |
+| **Document Processing** | Original files are parsed in the browser. Extracted resume text and the optional job description are sent to the selected provider on analysis. |
+| **API Transmission** | HTTPS directly to the selected provider; keys are sent in authentication headers. |
+| **API Key Storage** | In memory by default; optional unencrypted `localStorage`, isolated per provider. |
+| **Data Retention** | This app adds no analytics or server storage. Provider policies apply to API requests. OpenAI requests use `store: false`. |
 
 ---
 
@@ -143,11 +163,10 @@ The repository also includes the original command-line tools in `skill/scripts/`
 
 - **`validate_report.py`**: Validates report schemas and section structures.
 
----
+Provider adapter checks run without API keys or network requests:
 
-## 🤝 Acknowledgements
+    node --test tests/providers.test.cjs
 
-- **Cyber Resume Reviewer Framework:** Created by [mubix](https://github.com/mubix/cyber-resume-reviewer-skill).
-- **Google Gemini:** Models and API provided by Google AI Studio.
-- **PDF.js:** Document parsing by Mozilla.
-- **Marked.js:** Markdown rendering by the Marked community.
+Browser regression checks cover Gemini model selection and recovery with mocked API responses (requires Node.js 22+ and Chrome/Chromium; set `CHROME_PATH` if needed):
+
+    node tests/browser-model-recovery.cjs
